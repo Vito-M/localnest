@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Area Riservata - File Personali</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --danger-color: #dc3545;
+            --gray-color: #6c757d;
+            --success-color: #198754;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #eef1f5;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-top: 0;
+            text-align: center;
+            color: #333;
+            font-size: 1.75rem;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 25px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #444;
+            font-size: 1rem;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+        }
+
+        input[type="submit"] {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0b5ed7;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 35px;
+        }
+
+        li {
+            background-color: #f8f9fa;
+            padding: 14px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+
+        li:hover {
+            background-color: #e9ecef;
+        }
+
+        .file-name {
+            display: block;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .file-actions-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .file-actions a.download {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .file-actions a.download:hover {
+            text-decoration: underline;
+        }
+
+        .file-actions button.delete-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 5px;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .file-actions button.delete-btn:hover {
+            color: #a71d2a;
+        }
+
+        .logout {
+            display: block;
+            margin-top: 40px;
+            text-align: center;
+            color: var(--danger-color);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px;
+        }
+
+        .logout:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .modal-content p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .modal-buttons button {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            border: none;
+            flex: 1;
+            max-width: 120px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-confirm {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: var(--gray-color);
+            color: white;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1100;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            max-width: 90%;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast i {
+            font-size: 1.2rem;
+        }
+
+        /* Ottimizzazioni per mobile */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px auto;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-buttons button {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .file-actions button.delete-btn span,
+            .file-actions a.download span {
+                display: none;
+            }
+
+            .file-actions button.delete-btn,
+            .file-actions a.download {
+                padding: 8px 12px;
+            }
+
+            .toast {
+                width: 90%;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Benvenuto, {{ username }}</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        <label for="file">Seleziona un file da caricare:</label>
+        <input type="file" name="file" id="file" required>
+        <input type="submit" value="Carica file">
+    </form>
+
+    <ul>
+        {% for file in files %}
+        <li>
+            <span class="file-name">{{ file.original_filename }}</span>
+            <div class="file-actions-container">
+                <div class="file-actions">
+                    <a class="download" href="/download/{{ file.id }}" aria-label="Scarica {{ file.original_filename }}">
+                        <i class="fa-solid fa-download"></i> <span>Scarica</span>
+                    </a>
+                </div>
+                <div class="file-actions">
+                    <form method="post" action="/delete/{{ file.id }}" class="delete-form" style="display:inline;">
+                        <button type="submit" class="delete-btn" title="Elimina" aria-label="Elimina {{ file.original_filename }}">
+                            <i class="fa-solid fa-trash-can"></i> <span>Elimina</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <a class="logout" href="/logout">Esci</a>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <p>Sei sicuro di voler eliminare questo file?</p>
+        <div class="modal-buttons">
+            <button class="btn-confirm">Elimina</button>
+            <button class="btn-cancel">Annulla</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toast notification functions
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+
+    // Check for URL parameters to show notifications
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const uploadStatus = urlParams.get('upload');
+        const deleteStatus = urlParams.get('delete');
+        
+        if (uploadStatus === 'success') {
+            showToast('File caricato con successo!', 'success');
+        } else if (uploadStatus === 'error') {
+            showToast('Errore nel caricamento del file', 'error');
+        }
+        
+        if (deleteStatus === 'success') {
+            showToast('File eliminato con successo!', 'success');
+        } else if (deleteStatus === 'error') {
+            showToast('Errore nell\'eliminazione del file', 'error');
+        }
+        
+        // Clean up URL
+        if (uploadStatus || deleteStatus) {
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+    });
+
+    // Existing modal functionality
+    const modal = document.getElementById("deleteModal");
+    const confirmBtn = document.querySelector(".btn-confirm");
+    const cancelBtn = document.querySelector(".btn-cancel");
+    let formToSubmit = null;
+
+    document.querySelectorAll(".delete-form").forEach(form => {
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            formToSubmit = form;
+            modal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+        });
+    });
+
+    confirmBtn.addEventListener("click", () => {
+        if (formToSubmit) formToSubmit.submit();
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+    });
+
+    cancelBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+        formToSubmit = null;
+        document.body.style.overflow = "auto";
+    });
+
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+            formToSubmit = null;
+            document.body.style.overflow = "auto";
+        }
+    });
+</script>
+</body>
+</html>
