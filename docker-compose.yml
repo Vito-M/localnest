@@ -6,4 +6,4 @@ services:
       - "5000:5000"
     volumes:
       - ./app/data:/app/data # per i file upload
-      - ./app/data/database.db:/app/data/database.db  # per il DB SQLite persistente
+      - ./app/database.db:/app/database.db  # per il DB SQLite persistente

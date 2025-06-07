@@ -6,18 +6,17 @@ from flask import Flask, request, redirect, render_template, send_file, session,
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(32) # Non piu HardCoded
+app.secret_key = secrets.token_hex(32)  # Non più hardcoded
 UPLOAD_FOLDER = 'data'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def get_db_connection():
-    conn = sqlite3.connect('data/database.db')
+    conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
-# Inizializzazione DB
 def init_db():
     conn = get_db_connection()
     conn.execute('''
@@ -115,38 +114,41 @@ def dashboard():
     conn.close()
     return render_template('upload.html', files=files, username=session['username'], email=user['email'])
 
-# Vulnerabile IDOR:
-@app.route('/download/<path:file_identifier>')
+# Messo controllo contro IDOR
+@app.route('/download/<int:file_identifier>')
 def download_file(file_identifier):
-    if file_identifier.isdigit():
-        conn = get_db_connection()
-        file = conn.execute('SELECT filename, original_filename FROM files WHERE id = ?', (file_identifier,)).fetchone() # Rimosso controllo sul session ID
-        conn.close()
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
 
-        if not file:
-            return "ID non valido", 404
+    conn = get_db_connection()
+    file = conn.execute(
+        'SELECT filename, original_filename FROM files WHERE id = ? AND user_id = ?',
+        (file_identifier, session['user_id'])
+    ).fetchone()
+    conn.close()
 
-        file_path = os.path.join(UPLOAD_FOLDER, file['filename'])
-        download_name = file['original_filename']
-    else:
-        file_path = os.path.join(UPLOAD_FOLDER, file_identifier)
-        download_name = file_identifier  # Assicurati che sia un nome valido
+    if not file:
+        return "ID non valido o accesso non autorizzato", 403
 
+    file_path = os.path.join(UPLOAD_FOLDER, file['filename'])
     if os.path.isfile(file_path):
-        return send_file(
-            file_path,
-            as_attachment=True,
-            download_name=download_name
-        )
+        return send_file(file_path, as_attachment=True, download_name=file['original_filename'])
 
     return "File non trovato", 404
 
-# Vulnerabile IDOR:
+# Messo controllo contro IDOR
 @app.route('/delete/<int:file_id>', methods=['POST'])
 def delete_file(file_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     try:
         conn = get_db_connection()
-        file = conn.execute('SELECT filename FROM files WHERE id = ?', (file_id,)).fetchone() # Rimosso controllo sul session ID
+        file = conn.execute(
+            'SELECT filename FROM files WHERE id = ? AND user_id = ?',
+            (file_id, session['user_id'])
+        ).fetchone()
+
         if file:
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file['filename'])
             if os.path.exists(filepath):
@@ -155,6 +157,7 @@ def delete_file(file_id):
             conn.commit()
             conn.close()
             return redirect(url_for('dashboard', delete='success'))
+
         conn.close()
         return redirect(url_for('dashboard', delete='nessunfile'))
     except Exception as e:
