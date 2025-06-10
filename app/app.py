@@ -9,10 +9,17 @@ app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)  # Non più hardcoded
 UPLOAD_FOLDER = 'data'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER # app.config -> una serie di valori accessibili da tutta l'app
+DATABASE_PATH = 'database.db'
 
 def get_db_connection():
-    conn = sqlite3.connect('database.db')
+    print(f"[DEBUG] Percorso assoluto del database: {os.path.abspath(DATABASE_PATH)}")
+    if not os.path.exists(DATABASE_PATH):
+        print("[DEBUG] ATTENZIONE! Il file database.db NON esiste! Verrà creato da 'sqlite3.conncect'")
+    else:
+        print("[DEBUG] Il file database.db è stato trovato correttamente.")
+
+    conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn

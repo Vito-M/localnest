@@ -127,20 +127,35 @@ Con queste modifiche, un utente potrà accedere solo ai **propri file**, impeden
 
 ---
 
-## Modifica in `docker-compose.yml`
+## 🔒 Modifica alla struttura dei file
+
+Per motivi di sicurezza, il file del database è stato spostato da:
+
+```
+app/data/database.db  
+```
+
+a:
+
+``` 
+app/database.db  
+```
+
+Questa modifica evita di salvare il database nella stessa cartella utilizzata per i file caricati dagli utenti, riducendo il rischio di accessi non autorizzati o sovrascritture accidentali.
 
 Per migliorare l'organizzazione del filesystem e risolvere il problema di accesso non autorizzato al DataBase, è stato modificato il path del DB nel file `docker-compose.yml`:
 
 ### Prima:
 ```yaml
 volumes:
-  - ./data/database.db:/app/data/database.db
+  - ./app/data:/app/data:z # file e DB
 ```
 
 ### Dopo:
 ```yaml
 volumes:
-  - ./app/database.db:/app/database.db
+  - ./app/data:/app/data:z # Per i file caricati
+  - ./app/database.db:/app/database.db:z # Per il database SQLite
 ```
 
 Questo permette di separare chiaramente la directory dell'applicazione dai dati caricati dagli utenti, evitando di mescolare file caricati con il database nella stessa cartella.
@@ -169,6 +184,7 @@ docker-compose up --build
 - Tutti i file sono associati all’utente loggato.
 - Le sessioni sono protette con `secrets.token_hex(32)`.
 - Le password sono salvate in modo sicuro con `werkzeug.security.generate_password_hash`.
+- I file sono persistenti e accessibili grazie al volume `./app/data:/app/data:z`, dove `:z` garantisce la  corretta etichettatura dei permessi SELinux nei sistemi che lo usano.
 
 ---
 

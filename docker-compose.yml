@@ -1,9 +1,9 @@
-version: '3'
+# version: '3' -> Deprecato
 services:
   web:
     build: .
     ports:
       - "5000:5000"
     volumes:
-      - ./app/data:/app/data # per i file upload
-      - ./app/database.db:/app/database.db  # per il DB SQLite persistente
+      - ./app/data:/app/data:z # Per i file caricati
+      - ./app/database.db:/app/database.db:z # Per il database SQLite
