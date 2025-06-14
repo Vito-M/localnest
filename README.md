@@ -292,20 +292,26 @@ def init_db():
 ## 📁 Struttura del Progetto
 Una panoramica ad albero dei file principali del progetto:
 ```cpp
-idor/
+localnest/
 │
 ├── app/
+|   |
+│   ├── database.db # Databese
+|   |
 │   ├── templates/ # Pagine HTML per il FrontEnd
 │   │   ├── login.html
 │   │   ├── register.html
 │   │   └── upload.html
+|   |
 │   ├── data/
-│   │   ├── database.db # Database generale
 │   │   ├── user1_file1.pdf  # Esempio di file caricato da un utente
 │   │   └── user2_image.jpg  # Esempio di file caricato da un utente
+|   |
 │   └── app.py # Applicazione principale
 │
 ├── readmeFile/ # Immagini e GIF per il README
+|   |
+│   ├── demo.gif
 │   └── logo.png
 │
 ├── Dockerfile
@@ -592,7 +598,7 @@ newgrp docker
 
 2. **Clona e posizionati nella directory del progetto:**
    ```bash
-   git clone https://github.com/Vito-M/idor.git
+   git clone https://github.com/Vito-M/localnest.git
    cd idor
    ```
 
@@ -779,7 +785,7 @@ Se vedi `Ciao mondo!`, sei pronto per iniziare a programmare!
 
 1. **Clona e posizionati nella directory del progetto:**
    ```bash
-   git clone https://github.com/Vito-M/idor.git
+   git clone https://github.com/Vito-M/localnest.git
    cd idor
    ```
 
